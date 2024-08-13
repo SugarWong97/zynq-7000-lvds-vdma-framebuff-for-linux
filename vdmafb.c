@@ -13,13 +13,13 @@
             reg = <0x7e000000 0x10000>;
             dmas = <&axi_vdma_0 0>;
             dma-names = "video";
-            width = <1024>;
-            height = <600>;
-            horizontal-front-porch = <160>;
-            horizontal-back-porch = <160>;
-            horizontal-sync = <136>;
-            vertical-front-porch = <17>;
-            vertical-back-porch = <18>;
+            width = <1080>;
+            height = <1920>;
+            horizontal-front-porch = <10>;
+            horizontal-back-porch = <20>;
+            horizontal-sync = <10>;
+            vertical-front-porch = <10>;
+            vertical-back-porch = <20>;
         };
  */
 
@@ -63,7 +63,7 @@
 #define VDMAFB_CONTROL_ENABLE 1
 
 struct vdmafb_dev {
-    struct backlight_device *backlight;
+    //struct backlight_device *backlight;
     struct fb_info info;
     void __iomem *regs;
     /* Physical and virtual addresses of framebuffer */
@@ -380,6 +380,7 @@ static int vdmafb_probe(struct platform_device *pdev)
     }
 
     /* Register backlight */
+#if 0
     memset(&props, 0, sizeof(struct backlight_properties));
     props.type = BACKLIGHT_RAW;
     props.max_brightness = 1023;
@@ -394,6 +395,7 @@ static int vdmafb_probe(struct platform_device *pdev)
         bl->props.fb_blank = FB_BLANK_UNBLANK;
         bl->props.brightness = vdmafb_bl_get_brightness(bl);
     }
+#endif
 
     return 0;
 
@@ -410,8 +412,10 @@ static int vdmafb_remove(struct platform_device *pdev)
 {
     struct vdmafb_dev *fbdev = platform_get_drvdata(pdev);
 
+#if 0
     if (fbdev->backlight)
         backlight_device_unregister(fbdev->backlight);
+#endif
     unregister_framebuffer(&fbdev->info);
     /* Disable display */
     vdmafb_writereg(fbdev, VDMAFB_BACKLIGHT_CONTROL, 0);
