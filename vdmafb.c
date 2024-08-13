@@ -8,19 +8,28 @@
  * Licensed under the GPL-2.
  *
  * Example devicetree contents:
-        axi_vdma_vga: axi_vdma_vga@7e000000 {
-            compatible = "topic,vdma-fb";
-            reg = <0x7e000000 0x10000>;
-            dmas = <&axi_vdma_0 0>;
-            dma-names = "video";
-            width = <1080>;
-            height = <1920>;
-            horizontal-front-porch = <10>;
-            horizontal-back-porch = <20>;
-            horizontal-sync = <10>;
-            vertical-front-porch = <10>;
-            vertical-back-porch = <20>;
-        };
+
+    // VDMA fb device
+    axi_vdma_vga: axi_vdma_vga@7e000000 {
+        compatible = "topic,vdma-fb";
+        reg = <0x7e000000 0x10000>;
+        dmas = <&axi_vdma_0 0>;
+        dma-names = "video";
+
+        num-fstores = <3>; // Xilinx VDMA requires clients to submit exactly the number of frame stores.
+
+        // Change to right Timing for LVDS Screen.
+        width = <1920>;
+        height = <1080>;
+
+        horizontal-front-porch = <88>; // hfp
+        horizontal-back-porch = <128>; // hbp
+        horizontal-sync = <44>;        // hs
+
+        vertical-front-porch = <4>;    // vfp
+        vertical-back-porch = <36>;    // vbp
+        vertical-sync = <5>;           // vs
+    };
  */
 
 #include <linux/backlight.h>
@@ -252,7 +261,7 @@ static void vdmafb_init_var(struct vdmafb_dev *fbdev, struct platform_device *pd
     of_property_read_u32(np, "vertical-front-porch", &var->upper_margin);
     of_property_read_u32(np, "vertical-back-porch", &var->lower_margin);
     /* TODO: sync */
-    /* 32 BPP */
+    /* 32 BPP ARGB8888 */
     var->transp.offset = 24;
     var->transp.length = 8;
     var->red.offset = 16;
