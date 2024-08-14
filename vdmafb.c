@@ -297,12 +297,25 @@ static int vdmafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
     return 0;
 }
 
+static int vdmafb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+{
+    unsigned int offset = vma->vm_pgoff << PAGE_SHIFT;
+
+    if (offset < info->fix.smem_len) {
+        return dma_mmap_wc(info->dev, vma, info->screen_base,
+                   info->fix.smem_start, info->fix.smem_len);
+    }
+
+    return -EINVAL;
+}
+
 static struct fb_ops vdmafb_ops = {
     .owner      = THIS_MODULE,
     .fb_setcolreg   = vdmafb_setcolreg,
     .fb_fillrect    = sys_fillrect,
     .fb_copyarea    = sys_copyarea,
     .fb_imageblit   = sys_imageblit,
+    .fb_mmap = vdmafb_mmap,
 };
 
 static int vdmafb_probe(struct platform_device *pdev)
